@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f4b183">
+<title>Student Result</title>
+
+<!-- Brown Tab Icon -->
+<link rel="icon" href="https://sts-school.edu.in/images/school-logo.png">
+
+<style>
+  
+body,html{margin:0;font-family:Arial;background:#f5f5f5;user-select:none;padding-top:0;}
+.result-wrapper{max-width:900px;margin:20px auto;padding:20px;background:#fff;position:relative;}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+td,th{
+  border:1px solid #000;
+  padding:6px;
+  color:#000;
+}
+
+/* TH alag control karo */
+th{
+  font-weight:bold;
+  text-align:center;   /* 🔥 ye important hai */
+}
+.label{
+  font-weight:bold;  
+}
+
+table{
+  font-family:'Segoe UI';
+  font-size:14px;
+}
+/* Personal details header */
+.personal-header td:first-child,
+.personal-header td:nth-child(2){
+  background:#f4b183;
+  font-weight:bold;
+}
+
+/* Table title */
+.table-title{
+  background:#f4b183;
+  font-weight:bold;
+  text-align:center;
+}
+.photo-cell {
+  width: 110px;
+  height: 140px;
+  padding: 0;
+  text-align: center;         /* horizontal center */
+  vertical-align: middle;     /* vertical center */
+  background: transparent !important;
+  border: 1px solid #000;
+  display: table-cell;        /* ensure vertical-align works */
+}
+.photo {
+  width: 100px;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+  margin: auto;               /* horizontal center */
+  border: 1px solid #000;
+}
+button{background:#f4b183;border:none;padding:8px 16px;margin:5px;font-weight:bold;cursor:pointer;}
+.disclaimer{margin-top:10px;font-size:14px;text-align:center;}
+#errorModal{display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);}
+.modal-content{background:#fff;width:300px;margin:15% auto;padding:20px;text-align:center;}
+.icon{font-size:40px;color:red;}
+.message{font-weight:bold;margin:10px 0;}
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#loading {
+  display: none; /* default hide */
+  position: fixed;
+  inset: 0; /* top:0; left:0; right:0; bottom:0; */
+  background: rgba(255,255,255,0.8);
+
+  justify-content: center; /* horizontal center */
+  align-items: center;     /* vertical center */
+  flex-direction: column;
+  display: flex; /* 🔥 only for flex styling, but JS will control show/hide */
+
+  text-align: center;
+  z-index: 9999;
+}
+
+.spinner {
+  border: 4px solid #eee;
+  border-top: 4px solid #f4b183;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px; /* space between spinner and text */
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* Search container + school header */
+#searchContainer{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#fff;
+  padding:30px 40px;
+  border:2px solid #f4b183;
+  border-radius:10px;
+  min-width:400px;
+  text-align:center;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+#searchContainer .school-header{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+#searchContainer .school-header img{width:60px;height:60px;object-fit:contain;}
+#searchContainer .school-header .school-name{
+  font-size:22px;
+  font-weight:bold;
+  color:#8a3f00;
+}
+#searchContainer .search-row{display:flex;gap:10px;margin-bottom:10px;}
+#searchContainer select,input{flex:1;padding:14px;font-size:16px;border:1px solid #f4b183;border-radius:6px;outline:none;}
+#searchContainer button{width:100%;padding:14px;background:linear-gradient(90deg,#f4b183,#e69138);color:#fff;font-weight:bold;border:none;border-radius:6px;cursor:pointer;}
+
+/* Result school header */
+.result-header{
+  display:flex;
+  align-items:center;
+  text-align:center;
+  justify-content:center;
+  margin-bottom:10px;
+  padding-bottom:10px;
+  position: relative;
+}
+
+.result-header::before{
+  content:"";
+  position:absolute;
+  bottom:4px;
+  left:0;
+  width:100%;
+  border-bottom:1px solid #000;   /* upar wali thin line */
+}
+
+.result-header::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  border-bottom:3px solid #000;   /* 🔥 niche wali moti line */
+}
+
+.school-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.school-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+}
+
+.school-address {
+  font-size: 14px;
+  color: #000;
+}
+
+.footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  padding:12px 20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
+  flex-wrap:wrap;
+  box-shadow:0 -2px 6px rgba(0,0,0,0.1);
+  z-index:999;
+  background: linear-gradient(90deg, #f4b183, #e69138);
+  color: #000;
+}
+
+/* PRINT SETTINGS */
+@media print{
+  button{display:none !important;}
+  .footer{display:none !important;}
+  body{-webkit-print-color-adjust: exact;print-color-adjust: exact;}
+}
+
+/* ============================ */
+/* MOBILE RESPONSIVE FOR SEARCH + FOOTER */
+/* ============================ */
+@media (max-width: 500px) {
+  /* Search container responsive */
+  #searchContainer {
+    width: 90% !important;
+    padding: 20px 15px !important;
+    min-width: unset !important;
+  }
+  #searchContainer .search-row {
+    flex-direction: column; /* stacked vertically */
+    align-items: stretch;   /* full width */
+  }
+  #searchContainer select,
+  #searchContainer input {
+    flex: unset;
+    width: 100%;
+    margin-bottom: 10px;
+    box-sizing: border-box; /* prevent overflow */
+  }
+  #searchContainer button {
+    width: 100%;
+    padding: 12px;
+  }
+  #searchContainer .school-header {
+    flex-direction: column;
+    gap: 5px;
+  }
+  #searchContainer .school-header img {
+    width: 50px;
+    height: 50px;
+  }
+  #searchContainer .school-header .school-name {
+    font-size: 18px;
+  }
+
+  /* Footer responsive */
+  .footer {
+    flex-direction: column;  /* stack vertically */
+    align-items: center;
+    text-align: center;
+    font-size: 12px;
+    gap: 5px;
+  }
+  .footer span:nth-child(1),
+  .footer span:nth-child(2) {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+  }
+  .footer span:nth-child(3) {
+    display: block;   /* last sentence on separate line */
+    max-width: 100%;
+    margin-top: 5px;
+  }
+}
+
+/* ===== Watermark for result table ===== */
+#resultWrapper {
+  position: relative;          /* pseudo-element relative */
+  overflow: hidden;            /* prevent spill */
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;            /* optional */
+}
+
+#resultWrapper::before {
+  content: "";
+  position: absolute;
+  top: 50%;                     /* center vertically */
+  left: 50%;                    /* center horizontally */
+  transform: translate(-50%, -50%);
+  background: url('https://sts-school.edu.in/images/school-logo.png') no-repeat center center;
+  background-size: 300px 300px; /* adjust size */
+  opacity: 0.08;               /* light watermark */
+  width: 300px;
+  height: 300px;
+  pointer-events: none;        /* table clickable */
+  z-index: 0;                  /* table ke piche */
+}
+
+.result-wrapper table {
+  position: relative;
+  z-index: 1;                   /* table watermark ke upar rahe */
+}
+
+/* Print-friendly */
+@media print {
+  #resultWrapper::before {
+    opacity: 0.06;
+  }
+}
+</style>
+</head>
+<body>
+
+<script>
+const API_URL="https://dry-cloud-ba8e.praveentiwari759.workers.dev/";
+</script>
+
+<div id="searchContainer">
+  <div class="school-header">
+    <img src="https://sts-school.edu.in/images/school-logo.png">
+    <div class="school-name">ABC PUBLIC SCHOOL</div>
+  </div>
+
+  <div class="search-row">
+    <select id="classSelect"><option value="">Select Class</option></select>
+    <input type="text" id="roll" placeholder="Enter Roll Number">
+  </div>
+
+  <button onclick="search()">Search</button>
+</div>
+
+<div class="result-wrapper" id="resultWrapper" style="display:none">
+  <div id="result"></div>
+</div>
+
+<div id="errorModal">
+  <div class="modal-content">
+    <div class="icon">&#9888;</div>
+    <div class="message">Student not found!</div>
+    <button onclick="closeModal()">OK</button>
+  </div>
+</div>
+
+<script>
+function showError(msg){document.querySelector("#errorModal .message").textContent=msg;document.getElementById("errorModal").style.display="block";}
+function closeModal(){document.getElementById("errorModal").style.display="none";}
+function escapeHTML(str){if(!str) return "";return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+/* LOAD CLASSES */
+async function populateClasses(){
+  const res=await fetch(API_URL+"?api=1&getSheets=true");
+  const data=await res.json();
+  if(Array.isArray(data)){
+    const select=document.getElementById("classSelect");
+    data.forEach(s=>{
+      const opt=document.createElement("option");
+      opt.value=s;
+      opt.textContent=s;
+      select.appendChild(opt);
+    });
+  }
+}
+populateClasses();
+
+function showVal(val){
+  return (val == 0 || val === "" || val == null) ? '--' : val;
+}
+
+/* SEARCH */
+async function search(){
+  const roll=document.getElementById("roll").value.trim();
+  const sheetName=document.getElementById("classSelect").value;
+  if(!sheetName){showError("Please select a class!");return;}
+  if(!roll){showError("Please enter roll number!");return;}
+
+  // Show loading
+document.getElementById("loading").style.display = "flex";
+
+
+  const res=await fetch(API_URL+"?api=1&sheet="+encodeURIComponent(sheetName)+"&roll="+encodeURIComponent(roll));
+  const data=await res.json();
+
+  
+document.getElementById("loading").style.display = "none";
+  if(data.error){showError(data.error);return;}
+
+  const s=data.student;
+  const subs=data.subjects;
+  const totals=data.totals;
+let html = "";
+html += `
+<div class="result-header">
+  <img src="https://sts-school.edu.in/images/school-logo.png" class="school-logo">
+  <div class="school-info">
+    <div class="school-name">ABC PUBLIC SCHOOL ABC PUBLIC SCHOOL ABC PUBLIC SCHOOL</div>
+    <div class="school-address">Bhopal, Madhya Pradesh</div>
+  </div>
+</div>
+`;
+
+// PERSONAL DETAILS
+html+=`<table border="1">
+<tr>
+  <td class="label">Roll Number</td><td>${s.roll}</td>
+  <td class="photo-cell" rowspan="4">
+    <div class="photo-wrapper">
+      <img class="photo" src="${s.photo}" width="100">
+    </div>
+  </td>
+</tr>
+<tr><td class="label">Name</td><td>${s.name}</td></tr>
+<tr><td class="label">Father Name</td><td>${s.father}</td></tr>
+<tr><td class="label">Date Of Birth</td><td>${formatDOB(s.dob)}</td></tr>
+</table>`;
+
+// MARKS TABLE
+html+=`<table border="1">
+<tr>
+  <th rowspan="2">Subject</th>
+  <th colspan="2">Theory</th>
+  <th colspan="2">Practical</th>
+  <th rowspan="2">Remark</th>
+</tr>
+<tr>
+  <th>Max</th>
+  <th>Obt</th>
+  <th>Max</th>
+  <th>Obt</th>
+</tr>`;
+
+let totalThMax = 0, totalThObt = 0;
+let totalPrMax = 0, totalPrObt = 0;
+let grandObt = 0, grandMax = 0;
+
+let subjectMap = {};
+
+subs.forEach(sub=>{
+  let base = sub.replace("_th","").replace("_pr","");
+  if(!subjectMap[base]) subjectMap[base] = {};
+  if(sub.includes("_th")) subjectMap[base].th = sub;
+  if(sub.includes("_pr")) subjectMap[base].pr = sub;
+});
+
+Object.keys(subjectMap).forEach(subName=>{
+
+  const thMax = Number(totals[subjectMap[subName].th]) || 0;
+  const thObt = Number(s[subjectMap[subName].th]) || 0;
+
+  const prMax = Number(totals[subjectMap[subName].pr]) || 0;
+  const prObt = Number(s[subjectMap[subName].pr]) || 0;
+
+  // Add to totals
+  totalThMax += thMax;
+  totalThObt += thObt;
+  totalPrMax += prMax;
+  totalPrObt += prObt;
+
+  // Grand total
+  grandObt += thObt + prObt;
+  grandMax += thMax + prMax;
+
+  const pass = grandObt>= grandMax* 0.33;
+
+  html+=`<tr>
+    <td>${subName}</td>
+    <td>${showVal(thMax)}</td>
+<td>${showVal(thObt)}</td>
+<td>${showVal(prMax)}</td>
+<td>${showVal(prObt)}</td>
+    <td>${pass?'PASS':'FAIL'}</td>
+  </tr>`;
+});
+
+// SUB TOTAL
+html += `<tr>
+  <td><b>Sub Total</b></td>
+  <td>${totalThMax}</td>
+  <td>${totalThObt}</td>
+  <td>${totalPrMax}</td>
+  <td>${totalPrObt}</td>
+  <td></td>
+</tr>`;
+
+// GRAND TOTAL
+const per = ((grandObt/grandMax)*100).toFixed(2);
+
+html+=`</table>
+
+<table border="1">
+<tr>
+  <td><b>Grand Total</b></td>
+  <td>${grandObt}/${grandMax}</td>
+  <td><b>Percentage</b></td>
+  <td>${per}%</td>
+  <td><b>Result</b></td>
+  <td>${per>=33?'PASS':'FAIL'}</td>
+</tr>
+</table>`;
+
+document.getElementById("result").innerHTML = html;
+  html+=`<div class="disclaimer">This is a computer-generated provisional result.</div><div style="text-align:center;margin-top:10px"><button onclick="window.print()">Print</button><button onclick="goBack()">Return</button></div></div>`;
+
+  document.getElementById("searchContainer").style.display="none";
+  document.getElementById("resultWrapper").style.display="block";
+  document.getElementById("result").innerHTML=html;
+  document.querySelector(".footer").style.display="none";
+}
+
+function goBack(){
+  document.getElementById("resultWrapper").style.display="none";
+  document.getElementById("searchContainer").style.display="block";
+  document.getElementById("roll").value="";
+  document.getElementById("classSelect").selectedIndex=0;
+  document.querySelector(".footer").style.display="flex";
+}
+function formatDOB(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date)) return dateStr; // agar valid date nahi
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0'); // Month 0-based
+  const yyyy = date.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+</script>
+
+<!-- SAME FOOTER -->
+<div class="footer">
+  <span style="display:flex;align-items:center;gap:5px;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="black" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.21.48 2.53.74 3.88.74a1 1 0 011 1v3.5a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.35.26 2.67.74 3.88a1 1 0 01-.21 1.11l-2.2 2.2z"/></svg>
+    <span>+91-9876543210</span>
+  </span>
+  <span style="display:flex;align-items:center;gap:5px;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="black" viewBox="0 0 24 24"><path d="M21 6.5L12 13 3 6.5V6h18v.5zM3 8v10h18V8l-9 6-9-6z"/></svg>
+    <span>support@abcschool.edu.in</span>
+  </span>
+  <span style="font-size:14px;text-align:center;max-width:500px;">
+    If there is any problem in the result, please make an inquiry here.
+  </span>
+</div>
+
+<script>
+// ============================
+// ADVANCED PAGE PROTECTION
+// ============================
+
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("selectstart", e => e.preventDefault());
+document.addEventListener("dragstart", e => e.preventDefault());
+["copy","cut","paste"].forEach(ev=>{document.addEventListener(ev,e=>e.preventDefault());});
+document.addEventListener("keydown", function(e){
+  if(e.key === "F12") e.preventDefault();
+  if(e.ctrlKey){
+    const k=e.key.toLowerCase();
+    if(["c","x","v","u","a","s","p"].includes(k)){e.preventDefault();}
+  }
+  if(e.ctrlKey && e.shiftKey){
+    const k=e.key.toLowerCase();
+    if(["i","j","c"].includes(k)){e.preventDefault();}
+  }
+});
+
+(function(){
+  function devtoolsOpen(){
+    const threshold = 160;
+    if(window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold){return true;}
+    return false;
+  }
+  function blockPage(){
+    document.body.innerHTML = "";
+    document.body.style.background = "#fff";
+  }
+  setInterval(function(){if(devtoolsOpen()){blockPage();}},500);
+})();
+
+(function(){
+  const element = new Image();
+  Object.defineProperty(element,'id',{get:function(){document.body.innerHTML="";}}); 
+  console.log(element);
+})();
+
+(function() {
+  const titleEl = document.getElementById("pageTitle");
+  let titleText = titleEl.textContent + "    "; // thoda space scrolling ke liye
+  let pos = 0;
+
+  setInterval(() => {
+    const scrollText = titleText.substring(pos) + titleText.substring(0, pos);
+    document.title = scrollText;
+    pos++;
+    if(pos > titleText.length) pos = 0;
+  }, 250); // speed: 250ms per scroll step
+})();
+
+</script>
+<div id="loading" style="display:none;"><div class="spinner"></div><div>Please wait...</div></div>
+</body>
+</html>
