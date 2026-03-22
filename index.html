@@ -572,18 +572,7 @@ document.addEventListener("keydown", function(e){
   console.log(element);
 })();
 
-(function() {
-  const titleEl = document.getElementById("pageTitle");
-  let titleText = titleEl.textContent + "    "; // thoda space scrolling ke liye
-  let pos = 0;
 
-  setInterval(() => {
-    const scrollText = titleText.substring(pos) + titleText.substring(0, pos);
-    document.title = scrollText;
-    pos++;
-    if(pos > titleText.length) pos = 0;
-  }, 250); // speed: 250ms per scroll step
-})();
 
 </script>
 <div id="loading" style="display:none;"><div class="spinner"></div><div>Please wait...</div></div>
