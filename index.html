@@ -375,7 +375,10 @@ document.getElementById("loading").style.display = "flex";
 
   
 document.getElementById("loading").style.display = "none";
-  if(data.error){showError(data.error);}
+  if(data.error){
+  showError(data.error);
+  return; // 🔥 STOP execution
+}
 
   const s=data.student;
   const subs=data.subjects;
