@@ -341,19 +341,34 @@ function escapeHTML(str){if(!str) return "";return String(str).replace(/&/g,'&am
 
 /* LOAD CLASSES */
 async function populateClasses(){
-  const res=await fetch(API_URL+"?api=1&getSheets=true");
-  const data=await res.json();
-  if(Array.isArray(data)){
+  try{
+    const res = await fetch(API_URL+"?api=1&getSheets=true");
+    const data = await res.json();
+
+    console.log("Sheets API response:", data);
+
+    let sheets = [];
+
+    if(Array.isArray(data)){
+      sheets = data;
+    } 
+    else if(data.sheets){
+      sheets = data.sheets;
+    }
+
     const select=document.getElementById("classSelect");
-    data.forEach(s=>{
+
+    sheets.forEach(s=>{
       const opt=document.createElement("option");
       opt.value=s;
       opt.textContent=s;
       select.appendChild(opt);
     });
+
+  }catch(err){
+    console.error("Class load error:", err);
   }
 }
-populateClasses();
 
 function showVal(val){
   return (val == 0 || val === "" || val == null) ? '--' : val;
